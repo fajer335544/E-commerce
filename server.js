@@ -72,7 +72,17 @@ next();
 app.use('/graphql',graphqlHTTP({
 schema:graphQlschema,
 rootValue:graphQlresolvers,
-graphiql:true
+graphiql:true,
+customFormatErrorFn(err){
+  if(!err.originalError){
+    return err
+  }
+  console.log(err.originalError.message)
+  const data = err.originalError.data;
+  const message = err.message||'An Error Occurd'
+  const code =err.originalError.code ||500;
+   return {message:message,status:code, data:data}
+}
 }))
 
 
