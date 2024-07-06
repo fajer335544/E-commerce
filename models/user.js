@@ -24,7 +24,7 @@ isAvatarImageSet:{
 },
 avatarImage:{
 type:String,
-default:""
+required:false
 },
 posts:[{
     type:Schema.Types.ObjectId,
