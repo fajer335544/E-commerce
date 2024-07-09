@@ -141,7 +141,7 @@ return {
 
 
     },
-    posts:async function(args,req){
+    posts:async function({page},req){
 console.log("---------")
         if(!req.isAuth)
             {
@@ -149,10 +149,16 @@ console.log("---------")
                  error.code =401;
                 throw error
             }
-
+if(!page)
+{
+    page=1;
+}
+let perPage=2;
        const totalPosts= await Post.find().countDocuments();
        const posts=await Post.find()
        .sort({createdAt:-1})
+       .skip((page-1)*perPage)
+       .limit(perPage)
        .populate('creator');
        return {
 
