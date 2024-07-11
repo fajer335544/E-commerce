@@ -44,7 +44,7 @@ module.exports = buildSchema(`
  
  content : String !
  title : String !
- imageUrl : String 
+ imageUrl : String !
 
  
  }
@@ -55,6 +55,8 @@ module.exports = buildSchema(`
 type RootQuery {
 login(email:String! , password : String! ): AuthData !
 posts(page:Int): PostData !
+
+post(id:ID !) : Post !
 }
 schema{
     query : RootQuery

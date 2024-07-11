@@ -7,6 +7,7 @@ const bodyParser=require('body-parser');
 const mongoose = require('mongoose');
 const multer=require('multer');
 const path=require('path');
+const fs=require('fs');
 const  cors=require('cors');
 var { createHandler } = require("graphql-http/lib/use/express")
 
@@ -65,9 +66,37 @@ next();
 
 
 })
-
-
 app.use(auth)
+
+
+
+
+
+
+
+
+app.put('/post-image',(req,res,next)=>{
+//   if(!req.isAuth)
+//   {
+// const error = new Error('You must be logged in')
+// error.code=401
+// throw error
+//   }
+  if(!req.file)
+  {
+    return res.status(200).json({message:'No File provided '})
+  }
+  console.log(req.file);
+  if(req.body.oldPath)
+  {
+     imageClear(req.body.oldPath) 
+  }
+  return res.status(201).json({message:'File was successfully added',
+    filePath: req.file.path})
+
+})
+
+
 
 app.use('/graphql',graphqlHTTP({
 schema:graphQlschema,
@@ -123,4 +152,8 @@ try{
 
 
 
-
+      const imageClear =filePath=>{
+        filePath=path.join(__dirname,'..',filePath);
+        fs.unlink(filePath,err=>console.log(err))
+      }
+      

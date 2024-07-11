@@ -83,6 +83,7 @@ console.log(gg)
            }
     },
     createPost : async function({postInput},req){
+        console.log("Created Post")
 
 
         if(!req.isAuth)
@@ -174,6 +175,30 @@ let perPage=2;
         totalPosts:totalPosts
        }
     
+    } 
+    ,  post : async function ({id},req){
+console.log(id)
+        if(!req.isAuth)
+            {
+                const error = new Error('Not Authinticator')
+                 error.code =401;
+                throw error
+            }
+
+            const post= await Post.findById(id).populate('creator');
+            console.log(post)
+            if(!post)
+            {
+                const error = new Error('Post -Not Found')
+                error.code=404
+                throw error
+            }
+            return {
+             ...post._doc,
+                
+                  createdAt : post.createdAt.toISOString(),
+                  updatedAt : post.updatedAt.toISOString()
+            }
     }
 
 
