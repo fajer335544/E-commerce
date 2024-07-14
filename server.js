@@ -7,8 +7,10 @@ const bodyParser=require('body-parser');
 const mongoose = require('mongoose');
 const multer=require('multer');
 const path=require('path');
-const fs=require('fs');
+
 const  cors=require('cors');
+
+const {imageClear}= require('./utils/file')
 var { createHandler } = require("graphql-http/lib/use/express")
 
 const { graphqlHTTP } = require('express-graphql');
@@ -152,8 +154,5 @@ try{
 
 
 
-      const imageClear =filePath=>{
-        filePath=path.join(__dirname,'..',filePath);
-        fs.unlink(filePath,err=>console.log(err))
-      }
+     
       

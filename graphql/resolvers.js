@@ -4,6 +4,7 @@ const Post = require('../models/post')
 const bcrypt=require('bcryptjs')
 const validator=require('validator')
 const jwt=require('jsonwebtoken')
+const {imageClear}= require('../utils/file')
 module.exports={
     createUser: async  function(args,req){
 const errors=[];
@@ -199,8 +200,132 @@ console.log(id)
                   createdAt : post.createdAt.toISOString(),
                   updatedAt : post.updatedAt.toISOString()
             }
+    },
+    updatePost:async function ({id,postInput},req){
+
+        if(!req.isAuth)
+            {
+                const error = new Error('Not Authinticator')
+                 error.code =401;
+                throw error
+            }
+
+            const post= await Post.findById(id).populate('creator');
+          
+            if(!post)
+            {
+                const error = new Error('Post -Not Found')
+                error.code=404
+                throw error
+            }
+            if(post.creator._id.toString()!==req.userId.toString())
+            {
+                const error = new Error('Not Authorization to update this post ')
+                error.code=403
+                throw error
+            }
+
+            
+const errors=[]
+if(validator.isEmpty(postInput.title)|| !validator.isLength(postInput.title,{min:3}))
+    {
+        errors.push( {message:"title is required field"})
+    }
+    if(validator.isEmpty(postInput.content)||!validator.isLength(postInput.content,{min:3}))
+        {
+            errors.push({message:"content is required field"})
+        }
+
+        if(errors.length>0)
+            {
+                const error =new Error('Validation error');
+                error.message = errors;
+                error.code = 422;
+                throw error;
+            }
+            post.title=postInput.title;
+            post.content=postInput.content;
+            if(postInput.imageUrl!=='undefined')
+            {
+            post.imageUrl=postInput.imageUrl;
+            }
+              const updatedPost= await post.save()
+              return {
+                ...updatedPost._doc,
+                _id:updatedPost._id.toString(),
+                createdAt:updatedPost.createdAt.toISOString(),
+                updatedAt:updatedPost.updatedAt.toISOString()
+              }
+    },
+    deletePost :async function ({id},req)
+    {
+        if(!req.isAuth)
+            {
+                const error = new Error('Not Authinticator')
+                 error.code =401;
+                throw error
+            }
+            const post = await Post.findById(id);
+            if(post.creator.toString()!== req.userId)
+            {
+                const error = new Error('Not Authorization to deleted this post ')
+                error.code=403
+                throw error
+            }
+            imageClear(post.imageUrl)
+            await Post.findByIdAndDelete(id);
+            const user = await User.findById(post.creator.toString())
+            user.posts.pull(id)
+            await user.save();
+            return true;
+
+    },
+    user: async function({},req){
+
+        if(!req.isAuth)
+            {
+                const error = new Error('GG Not Authinticator')
+                 error.code =401;
+                throw error
+            }
+            const user = await User.findById(req.userId)
+            if(!user)
+            {
+                const error = new Error('User not found');
+                error.code=404
+                throw error
+            }
+            return {
+                ...user._doc,
+                _id:user._id.toString()
+            }
+
+
+
     }
 
+,updateStatus: async function({status},req)
+{
+    if(!req.isAuth)
+        {
+            const error = new Error('GG Not Authinticator')
+             error.code =401;
+            throw error
+        }
+        const user = await User.findById(req.userId)
+        if(!user)
+        {
+            const error = new Error('User not found');
+            error.code=404
+            throw error
+        }
+        user.status=status;
+        await user.save()
+        return {
+            ...user._doc,
+            _id:user._id.toString()
+        }
 
+}
 
 }
